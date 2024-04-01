@@ -52,6 +52,12 @@ export type AbortInfo = {
   user: Scalars["String"]["output"];
 };
 
+export enum AccessLevel {
+  Admin = "ADMIN",
+  Edit = "EDIT",
+  View = "VIEW",
+}
+
 /**
  * Annotation models the metadata that a user can add to a task.
  * It is used as a field within the Task type.
@@ -501,6 +507,7 @@ export type EditSpawnHostInput = {
   publicKey?: InputMaybe<PublicKeyInput>;
   savePublicKey?: InputMaybe<Scalars["Boolean"]["input"]>;
   servicePassword?: InputMaybe<Scalars["String"]["input"]>;
+  sleepSchedule?: InputMaybe<SleepScheduleInput>;
   volume?: InputMaybe<Scalars["String"]["input"]>;
 };
 
@@ -701,6 +708,7 @@ export type Host = {
   persistentDnsName: Scalars["String"]["output"];
   provider: Scalars["String"]["output"];
   runningTask?: Maybe<TaskInfo>;
+  sleepSchedule?: Maybe<SleepSchedule>;
   startedBy: Scalars["String"]["output"];
   status: Scalars["String"]["output"];
   tag: Scalars["String"]["output"];
@@ -1262,6 +1270,7 @@ export type MutationSchedulePatchTasksArgs = {
 
 export type MutationScheduleTasksArgs = {
   taskIds: Array<Scalars["String"]["input"]>;
+  versionId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type MutationScheduleUndispatchedBaseTasksArgs = {
@@ -1414,10 +1423,12 @@ export type ParsleyFilterInput = {
 /** ParsleySettings contains information about a user's settings for Parsley. */
 export type ParsleySettings = {
   __typename?: "ParsleySettings";
+  jumpToFailingLineEnabled: Scalars["Boolean"]["output"];
   sectionsEnabled: Scalars["Boolean"]["output"];
 };
 
 export type ParsleySettingsInput = {
+  jumpToFailingLineEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
   sectionsEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
@@ -1685,6 +1696,7 @@ export type Project = {
   isFavorite: Scalars["Boolean"]["output"];
   manualPrTestingEnabled?: Maybe<Scalars["Boolean"]["output"]>;
   notifyOnBuildFailure?: Maybe<Scalars["Boolean"]["output"]>;
+  oldestAllowedMergeBase: Scalars["String"]["output"];
   owner: Scalars["String"]["output"];
   parsleyFilters?: Maybe<Array<ParsleyFilter>>;
   patchTriggerAliases?: Maybe<Array<PatchTriggerAlias>>;
@@ -1821,6 +1833,7 @@ export type ProjectInput = {
   identifier?: InputMaybe<Scalars["String"]["input"]>;
   manualPrTestingEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
   notifyOnBuildFailure?: InputMaybe<Scalars["Boolean"]["input"]>;
+  oldestAllowedMergeBase?: InputMaybe<Scalars["String"]["input"]>;
   owner?: InputMaybe<Scalars["String"]["input"]>;
   parsleyFilters?: InputMaybe<Array<ParsleyFilterInput>>;
   patchTriggerAliases?: InputMaybe<Array<PatchTriggerAliasInput>>;
@@ -1844,6 +1857,14 @@ export type ProjectInput = {
   versionControlEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
   workstationConfig?: InputMaybe<WorkstationConfigInput>;
 };
+
+export enum ProjectPermission {
+  Annotations = "ANNOTATIONS",
+  Logs = "LOGS",
+  Patches = "PATCHES",
+  Settings = "SETTINGS",
+  Tasks = "TASKS",
+}
 
 export type ProjectPermissions = {
   __typename?: "ProjectPermissions";
@@ -1878,6 +1899,7 @@ export enum ProjectSettingsAccess {
 export type ProjectSettingsInput = {
   aliases?: InputMaybe<Array<ProjectAliasInput>>;
   githubWebhooksEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
+  projectId?: InputMaybe<Scalars["String"]["input"]>;
   projectRef?: InputMaybe<ProjectInput>;
   subscriptions?: InputMaybe<Array<SubscriptionInput>>;
   vars?: InputMaybe<ProjectVarsInput>;
@@ -2015,7 +2037,8 @@ export type QueryGithubProjectConflictsArgs = {
 };
 
 export type QueryHasVersionArgs = {
-  id: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  patchId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryHostArgs = {
@@ -2051,7 +2074,8 @@ export type QueryMainlineCommitsArgs = {
 };
 
 export type QueryPatchArgs = {
-  id: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  patchId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryPodArgs = {
@@ -2074,12 +2098,14 @@ export type QueryProjectSettingsArgs = {
 
 export type QueryRepoEventsArgs = {
   before?: InputMaybe<Scalars["Time"]["input"]>;
-  id: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
+  repoId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryRepoSettingsArgs = {
-  id: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  repoId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryTaskArgs = {
@@ -2106,7 +2132,8 @@ export type QueryUserArgs = {
 };
 
 export type QueryVersionArgs = {
-  id: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  versionId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type RepoCommitQueueParams = {
@@ -2143,6 +2170,7 @@ export type RepoRef = {
   id: Scalars["String"]["output"];
   manualPrTestingEnabled: Scalars["Boolean"]["output"];
   notifyOnBuildFailure: Scalars["Boolean"]["output"];
+  oldestAllowedMergeBase: Scalars["String"]["output"];
   owner: Scalars["String"]["output"];
   parsleyFilters?: Maybe<Array<ParsleyFilter>>;
   patchTriggerAliases?: Maybe<Array<PatchTriggerAlias>>;
@@ -2186,6 +2214,7 @@ export type RepoRefInput = {
   id: Scalars["String"]["input"];
   manualPrTestingEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
   notifyOnBuildFailure?: InputMaybe<Scalars["Boolean"]["input"]>;
+  oldestAllowedMergeBase?: InputMaybe<Scalars["String"]["input"]>;
   owner?: InputMaybe<Scalars["String"]["input"]>;
   parsleyFilters?: InputMaybe<Array<ParsleyFilterInput>>;
   patchTriggerAliases?: InputMaybe<Array<PatchTriggerAliasInput>>;
@@ -2228,6 +2257,7 @@ export type RepoSettingsInput = {
   aliases?: InputMaybe<Array<ProjectAliasInput>>;
   githubWebhooksEnabled?: InputMaybe<Scalars["Boolean"]["input"]>;
   projectRef?: InputMaybe<RepoRefInput>;
+  repoId?: InputMaybe<Scalars["String"]["input"]>;
   subscriptions?: InputMaybe<Array<SubscriptionInput>>;
   vars?: InputMaybe<ProjectVarsInput>;
 };
@@ -2337,6 +2367,27 @@ export type SlackConfig = {
   name?: Maybe<Scalars["String"]["output"]>;
 };
 
+export type SleepSchedule = {
+  __typename?: "SleepSchedule";
+  dailyStartTime: Scalars["String"]["output"];
+  dailyStopTime: Scalars["String"]["output"];
+  permanentlyExempt: Scalars["Boolean"]["output"];
+  shouldKeepOff: Scalars["Boolean"]["output"];
+  temporarilyExemptUntil?: Maybe<Scalars["Time"]["output"]>;
+  timeZone: Scalars["String"]["output"];
+  wholeWeekdaysOff: Array<Scalars["Int"]["output"]>;
+};
+
+export type SleepScheduleInput = {
+  dailyStartTime: Scalars["String"]["input"];
+  dailyStopTime: Scalars["String"]["input"];
+  permanentlyExempt: Scalars["Boolean"]["input"];
+  shouldKeepOff: Scalars["Boolean"]["input"];
+  temporarilyExemptUntil?: InputMaybe<Scalars["Time"]["input"]>;
+  timeZone: Scalars["String"]["input"];
+  wholeWeekdaysOff: Array<Scalars["Int"]["input"]>;
+};
+
 export enum SortDirection {
   Asc = "ASC",
   Desc = "DESC",
@@ -2376,6 +2427,7 @@ export type SpawnHostInput = {
   region: Scalars["String"]["input"];
   savePublicKey: Scalars["Boolean"]["input"];
   setUpScript?: InputMaybe<Scalars["String"]["input"]>;
+  sleepSchedule?: InputMaybe<SleepScheduleInput>;
   spawnHostsStartedByTask?: InputMaybe<Scalars["Boolean"]["input"]>;
   taskId?: InputMaybe<Scalars["String"]["input"]>;
   taskSync?: InputMaybe<Scalars["Boolean"]["input"]>;
@@ -3537,6 +3589,7 @@ export type ProjectGithubSettingsFragment = {
   gitTagAuthorizedUsers?: Array<string> | null;
   gitTagVersionsEnabled?: boolean | null;
   manualPrTestingEnabled?: boolean | null;
+  oldestAllowedMergeBase: string;
   prTestingEnabled?: boolean | null;
   commitQueue: {
     __typename?: "CommitQueueParams";
@@ -3555,6 +3608,7 @@ export type RepoGithubSettingsFragment = {
   gitTagAuthorizedUsers?: Array<string> | null;
   gitTagVersionsEnabled: boolean;
   manualPrTestingEnabled: boolean;
+  oldestAllowedMergeBase: string;
   prTestingEnabled: boolean;
   commitQueue: {
     __typename?: "RepoCommitQueueParams";
@@ -3576,6 +3630,7 @@ export type ProjectGithubCommitQueueFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled?: boolean | null;
     manualPrTestingEnabled?: boolean | null;
+    oldestAllowedMergeBase: string;
     prTestingEnabled?: boolean | null;
     commitQueue: {
       __typename?: "CommitQueueParams";
@@ -3598,6 +3653,7 @@ export type RepoGithubCommitQueueFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled: boolean;
     manualPrTestingEnabled: boolean;
+    oldestAllowedMergeBase: string;
     prTestingEnabled: boolean;
     commitQueue: {
       __typename?: "RepoCommitQueueParams";
@@ -3620,6 +3676,7 @@ export type ProjectEventGithubCommitQueueFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled?: boolean | null;
     manualPrTestingEnabled?: boolean | null;
+    oldestAllowedMergeBase: string;
     prTestingEnabled?: boolean | null;
     commitQueue: {
       __typename?: "CommitQueueParams";
@@ -3679,6 +3736,7 @@ export type ProjectSettingsFieldsFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled?: boolean | null;
     manualPrTestingEnabled?: boolean | null;
+    oldestAllowedMergeBase: string;
     prTestingEnabled?: boolean | null;
     containerSizeDefinitions?: Array<{
       __typename?: "ContainerResources";
@@ -3885,6 +3943,7 @@ export type RepoSettingsFieldsFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled: boolean;
     manualPrTestingEnabled: boolean;
+    oldestAllowedMergeBase: string;
     prTestingEnabled: boolean;
     containerSizeDefinitions?: Array<{
       __typename?: "ContainerResources";
@@ -4287,6 +4346,7 @@ export type ProjectEventSettingsFragment = {
     gitTagAuthorizedUsers?: Array<string> | null;
     gitTagVersionsEnabled?: boolean | null;
     manualPrTestingEnabled?: boolean | null;
+    oldestAllowedMergeBase: string;
     prTestingEnabled?: boolean | null;
     taskSync: {
       __typename?: "TaskSyncOptions";
@@ -6757,6 +6817,7 @@ export type ProjectEventLogsQuery = {
           gitTagAuthorizedUsers?: Array<string> | null;
           gitTagVersionsEnabled?: boolean | null;
           manualPrTestingEnabled?: boolean | null;
+          oldestAllowedMergeBase: string;
           prTestingEnabled?: boolean | null;
           taskSync: {
             __typename?: "TaskSyncOptions";
@@ -6970,6 +7031,7 @@ export type ProjectEventLogsQuery = {
           gitTagAuthorizedUsers?: Array<string> | null;
           gitTagVersionsEnabled?: boolean | null;
           manualPrTestingEnabled?: boolean | null;
+          oldestAllowedMergeBase: string;
           prTestingEnabled?: boolean | null;
           taskSync: {
             __typename?: "TaskSyncOptions";
@@ -7256,6 +7318,7 @@ export type ProjectSettingsQuery = {
       gitTagAuthorizedUsers?: Array<string> | null;
       gitTagVersionsEnabled?: boolean | null;
       manualPrTestingEnabled?: boolean | null;
+      oldestAllowedMergeBase: string;
       prTestingEnabled?: boolean | null;
       containerSizeDefinitions?: Array<{
         __typename?: "ContainerResources";
@@ -7523,6 +7586,7 @@ export type RepoEventLogsQuery = {
           gitTagAuthorizedUsers?: Array<string> | null;
           gitTagVersionsEnabled?: boolean | null;
           manualPrTestingEnabled?: boolean | null;
+          oldestAllowedMergeBase: string;
           prTestingEnabled?: boolean | null;
           taskSync: {
             __typename?: "TaskSyncOptions";
@@ -7736,6 +7800,7 @@ export type RepoEventLogsQuery = {
           gitTagAuthorizedUsers?: Array<string> | null;
           gitTagVersionsEnabled?: boolean | null;
           manualPrTestingEnabled?: boolean | null;
+          oldestAllowedMergeBase: string;
           prTestingEnabled?: boolean | null;
           taskSync: {
             __typename?: "TaskSyncOptions";
@@ -7953,6 +8018,7 @@ export type RepoSettingsQuery = {
       gitTagAuthorizedUsers?: Array<string> | null;
       gitTagVersionsEnabled: boolean;
       manualPrTestingEnabled: boolean;
+      oldestAllowedMergeBase: string;
       prTestingEnabled: boolean;
       containerSizeDefinitions?: Array<{
         __typename?: "ContainerResources";
